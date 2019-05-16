@@ -530,6 +530,15 @@ describe('the agent configuration', function() {
         })
       }
     )
+
+    it('should pick up disable_hrtime', () => {
+      idempotentEnv({
+        NEW_RELIC_DISABLE_HRTIME: true,
+        NEW_RELIC_FEATURE_FLAG_DISABLE_HRTIME: true
+      }, (tc) => {
+        expect(tc.transaction_tracer.disable_hrtime).to.be.true
+      })
+    })
   })
 
   describe('with both high_security and security_policies_token defined', function() {
