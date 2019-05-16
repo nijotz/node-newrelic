@@ -142,7 +142,7 @@ module.exports = function runTests(name, clientFactory) {
       'should register the query call'
     )
 
-    t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
+    t.ok(getSegment.timer._duration, 'trace segment should have ended')
   }
 
   function verifyInstanceParameters(t, segment) {

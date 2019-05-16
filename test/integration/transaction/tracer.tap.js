@@ -168,28 +168,28 @@ test('bind + full', function testThrows(t) {
     var notStarted = tracer.createSegment('notStarted')
     var bound = tracer.bindFunction(check, segment, true)
 
-    t.notOk(segment.timer.hrstart)
+    t.notOk(segment.timer._start)
     bound()
-    t.ok(segment.timer.hrDuration)
+    t.ok(segment.timer._duration)
 
     bound = tracer.bindFunction(checkNotStarted, notStarted, false)
 
-    t.notOk(notStarted.timer.hrstart)
+    t.notOk(notStarted.timer._start)
     bound()
-    t.notOk(notStarted.timer.hrDuration)
+    t.notOk(notStarted.timer._duration)
 
     t.end()
 
     function check() {
-      t.ok(segment.timer.hrstart)
+      t.ok(segment.timer._start)
       t.equal(tracer.getSegment(), segment)
-      t.notOk(segment.timer.hrDuration)
+      t.notOk(segment.timer._duration)
     }
 
     function checkNotStarted() {
-      t.notOk(notStarted.timer.hrstart)
+      t.notOk(notStarted.timer._start)
       t.equal(tracer.getSegment(), notStarted)
-      t.notOk(notStarted.timer.hrDuration)
+      t.notOk(notStarted.timer._duration)
     }
   })
 })
@@ -279,8 +279,8 @@ test('createSegment', function testCreateSegment(t) {
     t.equal(segment.name, 'inside transaction')
 
     tracer.bindFunction(function bound() {
-      t.equal(segment.timer.hrstart,  null)
-      t.equal(segment.timer.hrDuration,  null)
+      t.equal(segment.timer._start,  null)
+      t.equal(segment.timer._duration,  null)
       t.equal(tracer.getSegment(), segment)
     }, segment)()
   })
@@ -289,8 +289,8 @@ test('createSegment', function testCreateSegment(t) {
 
   tracer.bindFunction(function bound() {
     t.equal(outerSegment.name, 'outside with parent')
-    t.equal(outerSegment.timer.hrstart,  null)
-    t.equal(outerSegment.timer.hrDuration,  null)
+    t.equal(outerSegment.timer._start,  null)
+    t.equal(outerSegment.timer._duration,  null)
     t.equal(tracer.getSegment(), outerSegment)
   }, outerSegment)()
 
@@ -358,7 +358,7 @@ test('addSegment + recorder', function addSegmentTest(t) {
     var root = transaction.trace.root
 
     t.equal(segment.name, 'inside')
-    t.equal(segment.timer.hrDuration, null)
+    t.equal(segment.timer._duration, null)
     t.equal(root.children[0], segment)
 
     transaction.end()
@@ -367,8 +367,8 @@ test('addSegment + recorder', function addSegmentTest(t) {
 
   function check(seg) {
     t.equal(seg, tracer.getSegment())
-    t.equal(seg.timer.hrstart, null)
-    t.equal(seg.timer.hrDuration, null)
+    t.equal(seg.timer._start, null)
+    t.equal(seg.timer._duration, null)
     return tracer.getSegment()
   }
 
@@ -388,7 +388,7 @@ test('addSegment + full', function addSegmentTest(t) {
     var root = transaction.trace.root
 
     t.equal(segment.name, 'inside')
-    t.ok(segment.timer.hrDuration)
+    t.ok(segment.timer._duration)
     t.equal(root.children[0], segment)
 
     transaction.end()
@@ -399,8 +399,8 @@ test('addSegment + full', function addSegmentTest(t) {
 
   function check(segment) {
     t.equal(segment, tracer.getSegment())
-    t.ok(segment.timer.hrstart)
-    t.equal(segment.timer.hrDuration, null)
+    t.ok(segment.timer._start)
+    t.equal(segment.timer._duration, null)
     return tracer.getSegment()
   }
 })
@@ -623,8 +623,8 @@ test('wrapFunction', function testwrapFunction(t) {
       t.equal(arg, val)
       t.equal(this, inner)
       if (parent) {
-        t.ok(segment.timer.hrstart)
-        t.notOk(segment.timer.hrDuration)
+        t.ok(segment.timer._start)
+        t.notOk(segment.timer._duration)
         t.notEqual(parent.children.indexOf(segment), -1)
       }
 
@@ -637,8 +637,8 @@ test('wrapFunction', function testwrapFunction(t) {
 
     if (name) {
       t.equal(segment.name, name)
-      t.ok(segment.timer.hrstart)
-      t.notOk(segment.timer.hrDuration)
+      t.ok(segment.timer._start)
+      t.notOk(segment.timer._duration)
     } else {
       t.equal(segment, null)
     }
@@ -655,10 +655,10 @@ test('wrapFunction', function testwrapFunction(t) {
 
       if (segment) {
         segment.children.forEach(function(child) {
-          t.ok(child.timer.hrstart)
-          t.ok(child.timer.hrDuration)
+          t.ok(child.timer._start)
+          t.ok(child.timer._duration)
         })
-        t.ok(segment.timer.hrDuration)
+        t.ok(segment.timer._duration)
         segment.transaction.end()
       }
     })
@@ -667,7 +667,7 @@ test('wrapFunction', function testwrapFunction(t) {
   }
 
   function record(seg) {
-    t.ok(seg.timer.hrDuration)
+    t.ok(seg.timer._duration)
     t.equal(seg.name, 'my segment')
   }
 
@@ -718,8 +718,8 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
     t.equal(this, inner)
 
     if (parent) {
-      t.ok(segment.timer.hrstart)
-      t.notOk(segment.timer.hrDuration)
+      t.ok(segment.timer._start)
+      t.notOk(segment.timer._duration)
       t.equal(parent.children[0], segment)
     }
 
@@ -733,8 +733,8 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
 
     if (name) {
       t.equal(segment.name, name)
-      t.ok(segment.timer.hrstart)
-      t.notOk(segment.timer.hrDuration)
+      t.ok(segment.timer._start)
+      t.notOk(segment.timer._duration)
     } else {
       t.equal(segment, null)
     }
@@ -749,9 +749,9 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
 
       if (segment) {
         t.equal(segment.children.length, 1)
-        t.ok(segment.children[0].timer.hrstart)
-        t.ok(segment.children[0].timer.hrDuration)
-        t.ok(segment.timer.hrDuration)
+        t.ok(segment.children[0].timer._start)
+        t.ok(segment.children[0].timer._duration)
+        t.ok(segment.timer._duration)
         segment.transaction.end()
       }
     })
@@ -760,7 +760,7 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
   }
 
   function record(seg) {
-    t.ok(seg.timer.hrDuration)
+    t.ok(seg.timer._duration)
     t.equal(seg.name, 'my segment')
   }
 })
@@ -795,8 +795,8 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
     t.equal(this, inner)
 
     if (parent) {
-      t.ok(segment.timer.hrstart)
-      t.notOk(segment.timer.hrDuration)
+      t.ok(segment.timer._start)
+      t.notOk(segment.timer._duration)
       t.equal(parent.children[0], segment)
     }
 
@@ -809,8 +809,8 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
 
     if (name) {
       t.equal(segment.name, name)
-      t.ok(segment.timer.hrstart)
-      t.notOk(segment.timer.hrDuration)
+      t.ok(segment.timer._start)
+      t.notOk(segment.timer._duration)
     } else {
       t.equal(segment, null)
     }
@@ -825,9 +825,9 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
 
       if (segment) {
         t.equal(segment.children.length, 1)
-        t.ok(segment.children[0].timer.hrstart)
-        t.ok(segment.children[0].timer.hrDuration)
-        t.ok(segment.timer.hrDuration)
+        t.ok(segment.children[0].timer._start)
+        t.ok(segment.children[0].timer._duration)
+        t.ok(segment.timer._duration)
         segment.transaction.end()
       }
     })
@@ -836,7 +836,7 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
   }
 
   function record(seg) {
-    t.ok(seg.timer.hrDuration)
+    t.ok(seg.timer._duration)
     t.equal(seg.name, 'my segment')
   }
 })
@@ -853,8 +853,8 @@ test('wrapSyncFunction', function testwrapSyncFunction(t) {
 
   helper.runInTransaction(agent, function inTrans(transaction) {
     wrapped(transaction, [4], 4)
-    t.ok(transaction.trace.root.children[0].timer.hrstart)
-    t.ok(transaction.trace.root.children[0].timer.hrDuration)
+    t.ok(transaction.trace.root.children[0].timer._start)
+    t.ok(transaction.trace.root.children[0].timer._duration)
     transaction.end()
   })
 

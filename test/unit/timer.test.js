@@ -2,28 +2,37 @@
 
 const chai = require('chai')
 const expect = chai.expect
+const sinon = require('sinon')
 const Timer = require('../../lib/timer')
 
 
 describe('Timer', function() {
+  let config = null
+  beforeEach(() => {
+    config = {
+      feature_flag: {
+        disable_hrtime: false
+      }
+    }
+  })
   it("should know when it's active", function() {
-    var timer = new Timer()
+    var timer = new Timer(config)
     expect(timer.isActive()).equal(true)
   })
 
   it("should know when it hasn't yet been started", function() {
-    var timer = new Timer()
+    var timer = new Timer(config)
     expect(timer.isRunning()).equal(false)
   })
 
   it("should know when it's running", function() {
-    var timer = new Timer()
+    var timer = new Timer(config)
     timer.begin()
     expect(timer.isRunning()).equal(true)
   })
 
   it("should know when it's not running", function() {
-    var timer = new Timer()
+    var timer = new Timer(config)
     expect(timer.isRunning()).equal(false)
 
     timer.begin()
@@ -32,7 +41,7 @@ describe('Timer', function() {
   })
 
   it("should know when it hasn't yet been stopped", function() {
-    var timer = new Timer()
+    var timer = new Timer(config)
     expect(timer.isActive()).equal(true)
 
     timer.begin()
@@ -40,15 +49,32 @@ describe('Timer', function() {
   })
 
   it("should know when it's stopped", function() {
-    var timer = new Timer()
+    var timer = new Timer(config)
     timer.begin()
     timer.end()
 
     expect(timer.isActive()).equal(false)
   })
 
+  it('should not use process.hrtime when disabled via config', (done) => {
+    const hrtime = sinon.spy(process, 'hrtime')
+    config = {
+      feature_flag: {
+        disable_hrtime: true
+      }
+    }
+    const timer = new Timer(config)
+    timer.begin()
+    setTimeout(() => {
+      expect(timer.getDurationInMillis()).above(3)
+      expect(hrtime.callCount).to.equal(0)
+      hrtime.restore()
+      done()
+    }, 5)
+  })
+
   it("should return the time elapsed of a running timer", function(done) {
-    var timer = new Timer()
+    var timer = new Timer(config)
     timer.begin()
     setTimeout(function() {
       expect(timer.getDurationInMillis()).above(3)
@@ -58,7 +84,7 @@ describe('Timer', function() {
   })
 
   it("should allow setting the start as well as the duration of the range", function() {
-    var timer = new Timer()
+    var timer = new Timer(config)
     var start = Date.now()
     timer.setDurationInMillis(5, start)
 
@@ -66,7 +92,7 @@ describe('Timer', function() {
   })
 
   it("should return a range object", function() {
-    var timer = new Timer()
+    var timer = new Timer(config)
     var start = Date.now()
     timer.setDurationInMillis(5, start)
 
@@ -74,10 +100,10 @@ describe('Timer', function() {
   })
 
   it("should calculate start times relative to other timers", function() {
-    var first = new Timer()
+    var first = new Timer(config)
     first.begin()
 
-    var second = new Timer()
+    var second = new Timer(config)
     second.begin()
 
     first.end()
@@ -89,7 +115,7 @@ describe('Timer', function() {
   })
 
   it("should support updating the duration with touch", function(done) {
-    var timer = new Timer()
+    var timer = new Timer(config)
     timer.begin()
 
     setTimeout(function() {
@@ -116,9 +142,9 @@ describe('Timer', function() {
 
     beforeEach(function() {
       start = Date.now()
-      first = new Timer()
+      first = new Timer(config)
       first.setDurationInMillis(10, start)
-      second = new Timer()
+      second = new Timer(config)
     })
 
     it('with the same start and duration', function() {
@@ -149,7 +175,7 @@ describe('Timer', function() {
 
   describe('overwriteDurationInMillis', function() {
     it('stops the timer', function() {
-      var timer = new Timer()
+      var timer = new Timer(config)
       timer.begin()
       expect(timer.isActive()).equal(true)
 
@@ -158,7 +184,7 @@ describe('Timer', function() {
     })
 
     it('overwrites duration recorded by end() and touch()', function(done) {
-      var timer = new Timer()
+      var timer = new Timer(config)
       timer.begin()
       setTimeout(function() {
         expect(timer.getDurationInMillis() > 1).equal(true)

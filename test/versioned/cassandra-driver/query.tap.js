@@ -150,7 +150,7 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
                   getSegment.children.length >= 1,
                   'get should have a callback segment'
                 )
-                t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
+                t.ok(getSegment.timer._duration, 'trace segment should have ended')
               }
             }
 

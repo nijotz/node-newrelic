@@ -13,6 +13,7 @@ var used = [
   'cat',
   'custom_instrumentation',
   'custom_metrics',
+  'disable_hrtime',
   'express5',
   'express_segments',
   'native_metrics',

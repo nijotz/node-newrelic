@@ -419,12 +419,12 @@ describe('when working with http.request', function() {
       http.get('http://www.google.com/index.html', function(res) {
         var segment = agent.tracer.getSegment()
 
-        expect(segment.timer.hrstart).instanceof(Array)
-        expect(segment.timer.hrDuration).equal(null)
+        expect(segment.timer._start).instanceof(Array)
+        expect(segment.timer._duration).equal(null)
 
         res.resume()
         res.on('end', function onEnd() {
-          expect(segment.timer.hrDuration).instanceof(Array)
+          expect(segment.timer._duration).instanceof(Array)
           expect(segment.timer.getDurationInMillis()).above(0)
           transaction.end()
           done()
